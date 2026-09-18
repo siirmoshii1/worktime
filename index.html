@@ -45,18 +45,13 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
         }
 
-        .mono-card-subtle {
-            background-color: #121215;
-            border: 1px solid #1e1e24;
-        }
-
         /* Grayscale Avatar styling */
         .avatar-img {
             filter: grayscale(100%) contrast(125%) brightness(95%);
             transition: filter 0.5s ease, transform 0.3s ease;
         }
 
-        /* Mood Filter Overlays */
+        /* Dynamic Mood Animations */
         .avatar-working {
             filter: grayscale(100%) contrast(140%) brightness(85%);
             animation: subtleSigh 4s infinite ease-in-out;
@@ -72,7 +67,6 @@
             animation: happyCelebration 0.8s infinite alternate ease-in-out;
         }
 
-        /* Animations */
         @keyframes subtleSigh {
             0%, 100% { transform: translateY(0) scale(1); }
             50% { transform: translateY(3px) scale(0.98); }
@@ -128,10 +122,6 @@
             transform: translateY(-1px);
         }
 
-        .btn-mono-primary:active {
-            transform: translateY(1px);
-        }
-
         .btn-mono-secondary {
             background-color: #18181b;
             color: #f4f4f5;
@@ -159,7 +149,6 @@
             width: 0;
         }
 
-        /* Glitch text effect on splash */
         .glitch-text {
             letter-spacing: 0.15em;
             text-shadow: 2px 0 #ffffff, -2px 0 #333;
@@ -171,7 +160,7 @@
     <div id="splashScreen" class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center p-6 transition-opacity duration-700">
         <div class="relative mb-6">
             <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-full border-2 border-white p-1 relative overflow-hidden bg-zinc-900 shadow-2xl">
-                <img id="splashAvatar" class="avatar-img w-full h-full object-cover rounded-full" alt="Mascot Avatar">
+                <img id="splashAvatar" src="img.jpg" onerror="this.src='https://placehold.co/300x300/18181b/ffffff?text=img.jpg+Missing'" class="avatar-img w-full h-full object-cover rounded-full" alt="Mascot Avatar">
             </div>
             <div class="absolute -bottom-2 -right-2 bg-white text-black px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-widest border border-black shadow-lg">
                 READY?
@@ -222,11 +211,11 @@
                 </div>
             </div>
 
-            <!-- Avatar Image Container with Dynamic Rings -->
+            <!-- Avatar Image Container with img.jpg -->
             <div class="relative w-28 h-28 sm:w-32 sm:h-32 mx-auto mb-2 flex items-center justify-center">
                 <div id="avatarRing" class="absolute inset-0 rounded-full border border-zinc-700 pulse-ring"></div>
                 <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white p-0.5 bg-zinc-950 overflow-hidden relative z-10">
-                    <img id="mascotAvatar" class="avatar-img avatar-working w-full h-full object-cover rounded-full" alt="User Mascot">
+                    <img id="mascotAvatar" src="img.jpg" onerror="this.src='https://placehold.co/300x300/18181b/ffffff?text=img.jpg+Missing'" class="avatar-img avatar-working w-full h-full object-cover rounded-full" alt="User Mascot">
                 </div>
             </div>
 
@@ -238,7 +227,6 @@
         </div>
 
         <div id="mainHeroCard" class="mono-card rounded-2xl p-5 text-center relative overflow-hidden">
-            <!-- Current Time Header -->
             <div class="flex items-center justify-center space-x-2 mb-1">
                 <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
                 <span class="text-[10px] font-mono uppercase tracking-widest text-zinc-400">CURRENT TIME</span>
@@ -251,9 +239,7 @@
                 --------------------
             </div>
 
-            <!-- Circular Progress & Countdown Container -->
             <div class="pt-2 border-t border-zinc-800/80 flex flex-col items-center">
-                
                 <div class="relative w-40 h-40 my-2 flex items-center justify-center">
                     <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                         <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
@@ -266,7 +252,6 @@
                     </div>
                 </div>
 
-                <!-- Main Countdown Display -->
                 <div class="mt-2">
                     <p id="countdownLabel" class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">
                         COUNTDOWN TO OFF
@@ -276,7 +261,6 @@
                     </div>
                 </div>
 
-                <!-- Status Badge -->
                 <div class="mt-3">
                     <span id="statusBadge" class="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider bg-zinc-900 text-white border border-zinc-800">
                         <i class="fa-solid fa-hourglass-half mr-1.5 text-[9px]"></i> Shift In Progress
@@ -294,7 +278,6 @@
             </div>
 
             <div id="inputsPanel" class="space-y-3 pt-1">
-                <!-- Time Pickers -->
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[9px] font-mono uppercase tracking-wider text-zinc-400 mb-1">
@@ -310,7 +293,6 @@
                     </div>
                 </div>
 
-                <!-- Quick Preset Buttons -->
                 <div>
                     <label class="block text-[9px] font-mono uppercase tracking-wider text-zinc-400 mb-1.5">
                         Quick End Presets
@@ -341,19 +323,12 @@
         WORKTIME PWA &bull; MONOCHROME SHIFT TRACKER
     </footer>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-black px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center space-x-2 z-50 border border-zinc-300">
         <i id="toastIcon" class="fa-solid fa-circle-info text-black"></i>
         <span id="toastMsg">Notification message</span>
     </div>
 
     <script>
-        // Embedded Base64 User Avatar
-        const AVATAR_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAFoCAYAAABBySRGAAAAAXNSR0IArs4c6QAAIABJREFUeF7tnXecXFXZ/z/3zp3tzO4m2fRCIJQA0nuX3gRUpAkiAoo..." // Truncated for system context, placeholder used gracefully below
-        
-        // Dynamic fallback generator if image isn't loaded
-        const fallbackAvatar = "https://placehold.co/300x300/18181b/ffffff?text=MY+TIME";
-
         // Storage Keys
         const STORAGE_KEY_START = 'worktime_mono_start_v2';
         const STORAGE_KEY_END = 'worktime_mono_end_v2';
@@ -361,7 +336,6 @@
         // DOM Elements
         const splashScreen = document.getElementById('splashScreen');
         const startAppBtn = document.getElementById('startAppBtn');
-        const splashAvatar = document.getElementById('splashAvatar');
         const mascotAvatar = document.getElementById('mascotAvatar');
         const speechBubble = document.getElementById('speechBubble');
         const mascotMoodStatus = document.getElementById('mascotMoodStatus');
@@ -381,10 +355,8 @@
         const toggleInputsBtn = document.getElementById('toggleInputsBtn');
         const inputsPanel = document.getElementById('inputsPanel');
         const accordionIcon = document.getElementById('accordionIcon');
-        const mainHeroCard = document.getElementById('mainHeroCard');
         const installAppBtn = document.getElementById('installAppBtn');
 
-        // Presets
         const preset636Btn = document.getElementById('preset636Btn');
         const presetPlus8hBtn = document.getElementById('presetPlus8hBtn');
         const preset500Btn = document.getElementById('preset500Btn');
@@ -396,10 +368,6 @@
         const DEFAULT_END = '18:36';
         const DEFAULT_START = '10:36';
 
-        // Set Images
-        splashAvatar.src = AVATAR_BASE64.length > 200 ? AVATAR_BASE64 : fallbackAvatar;
-        mascotAvatar.src = AVATAR_BASE64.length > 200 ? AVATAR_BASE64 : fallbackAvatar;
-
         // Splash screen dismissal
         startAppBtn.addEventListener('click', () => {
             splashScreen.classList.add('opacity-0');
@@ -409,7 +377,6 @@
             playBeepSound(600, 0.1);
         });
 
-        // Toast Notification
         function showToast(message, iconClass = 'fa-solid fa-circle-check') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMsg');
@@ -426,7 +393,6 @@
             }, 3000);
         }
 
-        // Accordion functionality
         let isAccordionOpen = true;
         toggleInputsBtn.addEventListener('click', () => {
             isAccordionOpen = !isAccordionOpen;
@@ -439,7 +405,6 @@
             }
         });
 
-        // Load & Save Inputs
         function loadSavedTimes() {
             const savedStart = localStorage.getItem(STORAGE_KEY_START) || DEFAULT_START;
             const savedEnd = localStorage.getItem(STORAGE_KEY_END) || DEFAULT_END;
@@ -458,7 +423,7 @@
         startTimeInput.addEventListener('change', saveTimes);
         endTimeInput.addEventListener('change', saveTimes);
 
-        // Preset Handlers
+        // Presets
         preset636Btn.addEventListener('click', () => {
             endTimeInput.value = '18:36';
             startTimeInput.value = '10:36';
@@ -489,7 +454,6 @@
             showToast(`Calculated +8h shift (${formattedH}:${formattedM})`);
         });
 
-        // Time Helpers
         function formatTime12Hour(date) {
             let hours = date.getHours();
             let minutes = date.getMinutes();
@@ -523,7 +487,6 @@
             return `${hours}h ${pad(minutes)}m ${pad(seconds)}s`;
         }
 
-        // Sound Effects
         function playBeepSound(freq = 880, duration = 0.15) {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -582,14 +545,12 @@
         function updateTracker() {
             const now = new Date();
 
-            // 1. Digital Clock
             const { timeString, ampm } = formatTime12Hour(now);
             liveClockEl.innerHTML = `${timeString} <span class="text-lg sm:text-xl font-bold text-zinc-500">${ampm}</span>`;
             
             const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
             liveDateEl.textContent = now.toLocaleDateString('en-US', options);
 
-            // 2. Shift Range
             let startDate = timeStringToDate(startTimeInput.value);
             let endDate = timeStringToDate(endTimeInput.value);
 
@@ -604,7 +565,6 @@
             const CIRCLE_CIRCUMFERENCE = 263.89;
 
             if (now < startDate) {
-                // Shift not started
                 progressPercentageEl.textContent = '0.0%';
                 circleProgressEl.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
                 
@@ -617,7 +577,6 @@
                 updateMascotMood(0, false, true);
 
             } else if (now >= endDate) {
-                // Work Finished
                 progressPercentageEl.textContent = '100.0%';
                 circleProgressEl.style.strokeDashoffset = 0;
                 
@@ -637,7 +596,6 @@
                 }
 
             } else {
-                // In Progress
                 const pct = Math.min(100, Math.max(0, (elapsedMs / totalShiftMs) * 100));
                 progressPercentageEl.textContent = `${pct.toFixed(1)}%`;
                 
@@ -654,7 +612,6 @@
             }
         }
 
-        // Service Worker & PWA Init
         function setupPWA() {
             const manifestData = {
                 name: "WorkTime Tracker",
@@ -664,9 +621,9 @@
                 background_color: "#000000",
                 theme_color: "#000000",
                 icons: [{
-                    src: AVATAR_BASE64.length > 200 ? AVATAR_BASE64 : fallbackAvatar,
+                    src: "img.jpg",
                     sizes: "192x192",
-                    type: "image/png"
+                    type: "image/jpeg"
                 }]
             };
             const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
@@ -697,7 +654,6 @@
             });
         }
 
-        // App Start
         window.onload = function() {
             loadSavedTimes();
             setupPWA();
