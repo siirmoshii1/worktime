@@ -46,7 +46,7 @@
             background-color: #09090b;
             border: 1px solid #27272a;
             box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.8);
-            transition: all 0.2s ease;
+            transition: border-color 0.2s ease;
         }
 
         .mono-card:hover {
@@ -69,6 +69,11 @@
             animation: bounceShake 1.2s infinite ease-in-out;
         }
 
+        .avatar-panic {
+            filter: grayscale(100%) contrast(180%) brightness(130%);
+            animation: panicVibrate 0.1s infinite linear;
+        }
+
         .avatar-done {
             filter: grayscale(0%) contrast(110%) brightness(115%);
             animation: happyCelebration 0.7s infinite alternate ease-in-out;
@@ -85,9 +90,55 @@
             75% { transform: translateY(-1px) rotate(2deg); }
         }
 
+        @keyframes panicVibrate {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            20% { transform: translate(-2px, -2px) rotate(-1deg); }
+            40% { transform: translate(-1px, 2px) rotate(1deg); }
+            60% { transform: translate(2px, 1px) rotate(0deg); }
+            80% { transform: translate(1px, -2px) rotate(1deg); }
+            100% { transform: translate(-1px, 1px) rotate(-1deg); }
+        }
+
         @keyframes happyCelebration {
             0% { transform: translateY(0) scale(1) rotate(-3deg); }
             100% { transform: translateY(-6px) scale(1.05) rotate(3deg); }
+        }
+
+        /* --- EARTHQUAKE SCREEN SHAKE ANIMATIONS --- */
+        .earthquake-mild {
+            animation: shakeMild 0.2s infinite ease-in-out;
+        }
+
+        .earthquake-medium {
+            animation: shakeMedium 0.12s infinite ease-in-out;
+        }
+
+        .earthquake-severe {
+            animation: shakeSevere 0.07s infinite ease-in-out;
+        }
+
+        @keyframes shakeMild {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-2px, 1px) rotate(-0.5deg); }
+            50% { transform: translate(2px, -1px) rotate(0.5deg); }
+            75% { transform: translate(-1px, -2px) rotate(0.2deg); }
+        }
+
+        @keyframes shakeMedium {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            20% { transform: translate(-4px, 2px) rotate(-1deg); }
+            40% { transform: translate(3px, -3px) rotate(1deg); }
+            60% { transform: translate(-3px, 1px) rotate(-0.5deg); }
+            80% { transform: translate(4px, -2px) rotate(1deg); }
+        }
+
+        @keyframes shakeSevere {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            10% { transform: translate(-7px, 5px) rotate(-2deg); }
+            30% { transform: translate(8px, -6px) rotate(2deg); }
+            50% { transform: translate(-6px, -4px) rotate(-1.5deg); }
+            70% { transform: translate(7px, 6px) rotate(1.5deg); }
+            90% { transform: translate(-8px, -2px) rotate(-2deg); }
         }
 
         /* SVG Circular Progress Bar */
@@ -136,9 +187,19 @@
             max-height: 500px;
             transition: max-height 0.3s ease-in-out;
         }
+
+        /* Screen Flash on Completion */
+        .screen-flash {
+            animation: flashOverlay 0.8s ease-out;
+        }
+
+        @keyframes flashOverlay {
+            0% { background-color: #ffffff; }
+            100% { background-color: transparent; }
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-white selection:text-black p-3 sm:p-6 lg:p-8">
+<body id="appBody" class="min-h-screen flex flex-col justify-between antialiased selection:bg-white selection:text-black p-3 sm:p-6 lg:p-8">
 
     <!-- Loop Audio Element pointing to music.mp3 -->
     <audio id="bgAudio" loop preload="auto" src="music.mp3"></audio>
@@ -151,7 +212,7 @@
             </div>
             <div>
                 <h1 class="font-extrabold text-base sm:text-lg tracking-wider uppercase text-white leading-none">WORKTIME TRACKER</h1>
-                <p class="text-[10px] text-zinc-500 font-mono tracking-widest uppercase mt-1">REALTIME MILLISECOND PRECISION &bull; 6:36 PM OUT</p>
+                <p class="text-[10px] text-zinc-500 font-mono tracking-widest uppercase mt-1">MILLISECOND PRECISION &bull; 6:36 PM OUT</p>
             </div>
         </div>
 
@@ -215,7 +276,7 @@
             </div>
 
             <!-- PROMINENT CENTERPIECE: TIME REMAINING & PERCENTAGE -->
-            <div class="w-full my-4 py-6 px-4 bg-zinc-950/80 rounded-2xl border border-zinc-800/80 flex flex-col md:flex-row items-center justify-around gap-8">
+            <div id="centerpieceContainer" class="w-full my-4 py-6 px-4 bg-zinc-950/80 rounded-2xl border border-zinc-800/80 flex flex-col md:flex-row items-center justify-around gap-8">
                 
                 <!-- Circular Visualizer + High Visibility Percentage -->
                 <div class="relative w-44 h-44 sm:w-52 sm:h-52 flex-shrink-0 flex items-center justify-center">
@@ -233,7 +294,7 @@
                 <!-- Large Countdown Display -->
                 <div class="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
                     <div class="inline-flex items-center space-x-2">
-                        <i class="fa-solid fa-hourglass-half text-xs text-zinc-400"></i>
+                        <i id="countdownIcon" class="fa-solid fa-hourglass-half text-xs text-zinc-400"></i>
                         <span id="countdownLabel" class="text-xs sm:text-sm font-mono font-bold uppercase tracking-widest text-zinc-400">
                             TIME REMAINING
                         </span>
@@ -261,7 +322,7 @@
             <!-- Footer summary details inside Hero -->
             <div class="w-full pt-4 border-t border-zinc-900 flex flex-wrap justify-between items-center text-[11px] font-mono text-zinc-500 gap-2">
                 <span>TARGET OUT TIME: <strong id="targetDisplayTime" class="text-white font-extrabold">6:36 PM</strong></span>
-                <span>PRECISION TICK RATE: <strong>1MS</strong></span>
+                <span>EARTHQUAKE SENSORS: <strong id="earthquakeSensorText" class="text-zinc-400">STANDBY (&lt;60s)</strong></span>
             </div>
 
         </div>
@@ -270,7 +331,7 @@
         <div class="mono-card rounded-2xl overflow-hidden transition-all">
             
             <!-- Accordion Toggle Header -->
-            <button id="accordionToggleBtn" class="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-zinc-900/50 transition-colors focus:outline-none">
+            <button id="accordionToggleBtn" class="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-zinc-900/50 transition-colors focus:outline-none cursor-pointer">
                 <span class="text-xs font-mono uppercase tracking-wider text-white font-extrabold flex items-center">
                     <i class="fa-solid fa-sliders text-zinc-400 mr-2.5"></i> Shift Controls & Presets
                     <span class="ml-3 text-[10px] font-normal text-zinc-500 border border-zinc-800 px-2 py-0.5 rounded-md">Click to configure</span>
@@ -342,10 +403,12 @@
 
     <script>
         // Local Storage Keys
-        const STORAGE_KEY_START = 'worktime_ms_start_v2';
-        const STORAGE_KEY_END = 'worktime_ms_end_v2';
+        const STORAGE_KEY_START = 'worktime_ms_start_v3';
+        const STORAGE_KEY_END = 'worktime_ms_end_v3';
 
         // DOM Elements
+        const appBody = document.getElementById('appBody');
+        const mainHeroCard = document.getElementById('mainHeroCard');
         const bgAudio = document.getElementById('bgAudio');
         const audioToggleBtn = document.getElementById('audioToggleBtn');
         const audioIcon = document.getElementById('audioIcon');
@@ -361,11 +424,13 @@
         const liveDateEl = document.getElementById('liveDate');
         const countdownTimerEl = document.getElementById('countdownTimer');
         const countdownLabelEl = document.getElementById('countdownLabel');
+        const countdownIcon = document.getElementById('countdownIcon');
         const statusBadgeEl = document.getElementById('statusBadge');
         const progressPercentageEl = document.getElementById('progressPercentage');
         const circleProgressEl = document.getElementById('circleProgress');
         const linearProgressBarEl = document.getElementById('linearProgressBar');
         const targetDisplayTimeEl = document.getElementById('targetDisplayTime');
+        const earthquakeSensorText = document.getElementById('earthquakeSensorText');
 
         const accordionToggleBtn = document.getElementById('accordionToggleBtn');
         const accordionContent = document.getElementById('accordionContent');
@@ -384,11 +449,12 @@
         let deferredPrompt = null;
         let alarmTriggered = false;
         let isAudioPlaying = false;
+        let currentEarthquakeLevel = 'none';
 
         const DEFAULT_END = '18:36';
         const DEFAULT_START = '08:36';
 
-        // --- 1. ACCORDION CONTROLLER ---
+        // --- 1. ACCORDION CONTROLLER (COLLAPSED BY DEFAULT) ---
         accordionToggleBtn.addEventListener('click', () => {
             const isExpanded = accordionContent.classList.contains('expanded');
             if (isExpanded) {
@@ -412,7 +478,7 @@
                     isAudioPlaying = true;
                     updateAudioUI(true);
                 }).catch(err => {
-                    console.log("Browser restricted immediate autoplay. Will unlock on first user gesture.");
+                    console.log("Autoplay restricted. Will unlock on user gesture.");
                     isAudioPlaying = false;
                     updateAudioUI(false);
                 });
@@ -443,14 +509,14 @@
                     updateAudioUI(true);
                     showToast("Playing background music ('music.mp3')");
                 }).catch(() => {
-                    showToast("Could not play 'music.mp3'. Ensure file exists.");
+                    showToast("Could not play 'music.mp3'. Ensure file exists in root.");
                 });
             }
         }
 
         audioToggleBtn.addEventListener('click', toggleAudio);
 
-        // Global fallback: Unlocks audio context instantly on ANY screen click/tap/keypress
+        // Global gesture listener unlocks audio automatically
         const unlockAudioOnGesture = () => {
             if (!isAudioPlaying && bgAudio.paused) {
                 bgAudio.play().then(() => {
@@ -494,6 +560,7 @@
             localStorage.setItem(STORAGE_KEY_START, startTimeInput.value);
             localStorage.setItem(STORAGE_KEY_END, endTimeInput.value);
             alarmTriggered = false;
+            applyEarthquakeEffect('none');
         }
 
         startTimeInput.addEventListener('change', saveTimes);
@@ -587,8 +654,34 @@
             } catch(e){}
         }
 
+        // --- EARTHQUAKE CONTROLLER ---
+        function applyEarthquakeEffect(level) {
+            if (currentEarthquakeLevel === level) return;
+            currentEarthquakeLevel = level;
+
+            // Clear classes
+            mainHeroCard.classList.remove('earthquake-mild', 'earthquake-medium', 'earthquake-severe');
+
+            if (level === 'mild') {
+                mainHeroCard.classList.add('earthquake-mild');
+                earthquakeSensorText.textContent = 'MILD EARTHQUAKE (30s-60s)';
+                earthquakeSensorText.className = 'text-white font-bold animate-pulse';
+            } else if (level === 'medium') {
+                mainHeroCard.classList.add('earthquake-medium');
+                earthquakeSensorText.textContent = 'WARNING: SEISMIC SHAKE (10s-30s)';
+                earthquakeSensorText.className = 'text-white font-black animate-pulse';
+            } else if (level === 'severe') {
+                mainHeroCard.classList.add('earthquake-severe');
+                earthquakeSensorText.textContent = 'CRITICAL SEISMIC IMPACT (<10s)';
+                earthquakeSensorText.className = 'text-white font-black animate-ping';
+            } else {
+                earthquakeSensorText.textContent = 'STANDBY (<60s)';
+                earthquakeSensorText.className = 'text-zinc-400';
+            }
+        }
+
         // Dynamic Mascot Reaction
-        function updateMascotMood(pct, isFinished, isNotStarted) {
+        function updateMascotMood(pct, isFinished, isNotStarted, remainingMs) {
             mascotAvatar.className = "avatar-img w-full h-full object-cover rounded-full ";
 
             if (isNotStarted) {
@@ -597,6 +690,7 @@
                 mascotMoodStatus.textContent = "STATUS: SHIFT UPCOMING";
                 moodDot.className = "w-2 h-2 rounded-full bg-zinc-500";
                 avatarRing.style.borderColor = "#3f3f46";
+                applyEarthquakeEffect('none');
             } else if (isFinished) {
                 mascotAvatar.classList.add('avatar-done');
                 speechBubble.textContent = `"FREEDOM! IT IS 6:36 PM! GO HOME!"`;
@@ -604,33 +698,58 @@
                 mascotMoodStatus.textContent = "STATUS: WORK DONE! FREE!";
                 moodDot.className = "w-2 h-2 rounded-full bg-white animate-ping";
                 avatarRing.style.borderColor = "#ffffff";
+                applyEarthquakeEffect('none');
             } else {
-                speechBubble.className = "speech-bubble bg-white text-black px-4 py-2 rounded-xl text-xs sm:text-sm font-mono font-extrabold tracking-tight shadow-xl border border-zinc-300";
-                
-                if (pct < 25) {
-                    mascotAvatar.classList.add('avatar-working');
-                    speechBubble.textContent = `"Shift started... ticking millisecond by millisecond."`;
-                    mascotMoodStatus.textContent = "STATUS: SHIFT STARTED (0-25%)";
-                    moodDot.className = "w-2 h-2 rounded-full bg-zinc-500";
-                    avatarRing.style.borderColor = "#3f3f46";
-                } else if (pct < 50) {
-                    mascotAvatar.classList.add('avatar-working');
-                    speechBubble.textContent = `"Making progress! Hanging in there..."`;
-                    mascotMoodStatus.textContent = "STATUS: IN THE GROOVE (25-50%)";
-                    moodDot.className = "w-2 h-2 rounded-full bg-zinc-400";
-                    avatarRing.style.borderColor = "#52525b";
-                } else if (pct < 75) {
-                    mascotAvatar.classList.add('avatar-working');
-                    speechBubble.textContent = `"Over 50% done! The end is approaching."`;
-                    mascotMoodStatus.textContent = "STATUS: HALFWAY THERE (50-75%)";
-                    moodDot.className = "w-2 h-2 rounded-full bg-zinc-300";
-                    avatarRing.style.borderColor = "#71717a";
+                // Check for Earthquake (<= 60 seconds / 60000 ms)
+                if (remainingMs <= 60000) {
+                    mascotAvatar.classList.add('avatar-panic');
+                    avatarRing.style.borderColor = "#ffffff";
+                    
+                    if (remainingMs > 30000) {
+                        applyEarthquakeEffect('mild');
+                        speechBubble.textContent = `"FINAL MINUTE! THE GROUND IS SHAKING!"`;
+                        mascotMoodStatus.textContent = "EARTHQUAKE: MILD (FINAL 60S)";
+                        moodDot.className = "w-2 h-2 rounded-full bg-white animate-bounce";
+                    } else if (remainingMs > 10000) {
+                        applyEarthquakeEffect('medium');
+                        speechBubble.textContent = `"BRACE FOR IMPACT! ALMOST 6:36 PM!"`;
+                        mascotMoodStatus.textContent = "EARTHQUAKE: SEVERE (FINAL 30S)";
+                        moodDot.className = "w-2 h-2 rounded-full bg-white animate-ping";
+                    } else {
+                        applyEarthquakeEffect('severe');
+                        speechBubble.textContent = `"MAXIMUM OVERDRIVE! 10... 9... 8...!"`;
+                        mascotMoodStatus.textContent = "EARTHQUAKE: MAXIMUM IMPACT!";
+                        moodDot.className = "w-2 h-2 rounded-full bg-white animate-ping";
+                    }
                 } else {
-                    mascotAvatar.classList.add('avatar-almost-done');
-                    speechBubble.textContent = `"Almost out! Final countdown to 6:36 PM!"`;
-                    mascotMoodStatus.textContent = "STATUS: ALMOST OUT! (75-99%)";
-                    moodDot.className = "w-2 h-2 rounded-full bg-white animate-pulse";
-                    avatarRing.style.borderColor = "#a1a1aa";
+                    applyEarthquakeEffect('none');
+                    speechBubble.className = "speech-bubble bg-white text-black px-4 py-2 rounded-xl text-xs sm:text-sm font-mono font-extrabold tracking-tight shadow-xl border border-zinc-300";
+                    
+                    if (pct < 25) {
+                        mascotAvatar.classList.add('avatar-working');
+                        speechBubble.textContent = `"Shift started... ticking millisecond by millisecond."`;
+                        mascotMoodStatus.textContent = "STATUS: SHIFT STARTED (0-25%)";
+                        moodDot.className = "w-2 h-2 rounded-full bg-zinc-500";
+                        avatarRing.style.borderColor = "#3f3f46";
+                    } else if (pct < 50) {
+                        mascotAvatar.classList.add('avatar-working');
+                        speechBubble.textContent = `"Making progress! Hanging in there..."`;
+                        mascotMoodStatus.textContent = "STATUS: IN THE GROOVE (25-50%)";
+                        moodDot.className = "w-2 h-2 rounded-full bg-zinc-400";
+                        avatarRing.style.borderColor = "#52525b";
+                    } else if (pct < 75) {
+                        mascotAvatar.classList.add('avatar-working');
+                        speechBubble.textContent = `"Over 50% done! The end is approaching."`;
+                        mascotMoodStatus.textContent = "STATUS: HALFWAY THERE (50-75%)";
+                        moodDot.className = "w-2 h-2 rounded-full bg-zinc-300";
+                        avatarRing.style.borderColor = "#71717a";
+                    } else {
+                        mascotAvatar.classList.add('avatar-almost-done');
+                        speechBubble.textContent = `"Almost out! Final countdown to 6:36 PM!"`;
+                        mascotMoodStatus.textContent = "STATUS: ALMOST OUT! (75-99%)";
+                        moodDot.className = "w-2 h-2 rounded-full bg-white animate-pulse";
+                        avatarRing.style.borderColor = "#a1a1aa";
+                    }
                 }
             }
         }
@@ -675,7 +794,7 @@
                 statusBadgeEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-zinc-400 border border-zinc-800';
                 statusBadgeEl.innerHTML = '<i class="fa-regular fa-clock mr-2 text-xs"></i> Shift Upcoming';
 
-                updateMascotMood(0, false, true);
+                updateMascotMood(0, false, true, 999999);
 
             } else if (now >= endDate) {
                 progressPercentageEl.textContent = '100.000%';
@@ -688,17 +807,20 @@
                 statusBadgeEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-white text-black';
                 statusBadgeEl.innerHTML = '<i class="fa-solid fa-check mr-2 text-xs"></i> WORK DONE! TIME TO GO!';
 
-                updateMascotMood(100, true, false);
+                updateMascotMood(100, true, false, 0);
 
                 if (!alarmTriggered) {
+                    appBody.classList.add('screen-flash');
+                    setTimeout(() => appBody.classList.remove('screen-flash'), 800);
+
                     playBeepSound(880, 0.2);
                     setTimeout(() => playBeepSound(1200, 0.4), 200);
-                    showToast('OFF WORK TIME! 🎉', 'fa-solid fa-bell');
+                    showToast('OFF WORK TIME! FREEDOM! 🎉', 'fa-solid fa-bell');
                     
                     if (typeof confetti === 'function') {
                         confetti({
-                            particleCount: 120,
-                            spread: 80,
+                            particleCount: 150,
+                            spread: 90,
                             origin: { y: 0.6 },
                             colors: ['#ffffff', '#888888', '#cccccc']
                         });
@@ -714,14 +836,14 @@
                 circleProgressEl.style.strokeDashoffset = offset;
                 linearProgressBarEl.style.width = `${pct}%`;
 
-                countdownLabelEl.textContent = 'TIME REMAINING';
+                countdownLabelEl.textContent = remainingMs <= 60000 ? 'FINAL COUNTDOWN (EARTHQUAKE)' : 'TIME REMAINING';
                 const dur = formatMsDuration(remainingMs);
                 countdownTimerEl.innerHTML = `${dur.hms} <span class="text-zinc-500 text-2xl sm:text-4xl">${dur.ms}ms</span>`;
 
                 statusBadgeEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-zinc-200 border border-zinc-700';
                 statusBadgeEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2 text-xs"></i> Working... (${pct.toFixed(1)}%)`;
 
-                updateMascotMood(pct, false, false);
+                updateMascotMood(pct, false, false, remainingMs);
             }
 
             requestAnimationFrame(tickEngine);
