@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WorkTime Tracker</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#000000">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="WorkTime">
+    
+    <!-- Dynamic Manifest Data URI -->
+    <link id="manifest-placeholder" rel="manifest">
+
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        /* High-contrast Monochrome Border & Card Styling */
+        .mono-card {
+            background-color: #09090b;
+            border: 1px solid #27272a;
+            box-shadow: 0 4px 20px -2px rgba(255, 255, 255, 0.03);
+        }
+
+        .mono-card-highlight {
+            background-color: #121215;
+            border: 1px solid #3f3f46;
+        }
+
+        /* Smooth custom transitions */
+        .progress-bar-fill {
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Pulse glow animation for complete state in high contrast */
+        @keyframes monoPulse {
+            0%, 100% { border-color: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
+            50% { border-color: #52525b; box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); }
+        }
+
+        .pulse-celebrate {
+            animation: monoPulse 1.8s infinite ease-in-out;
+        }
+
+        /* Invert color button effect */
+        .btn-mono-primary {
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #ffffff;
+            transition: all 0.2s ease;
+        }
+
+        .btn-mono-primary:hover {
+            background-color: #e4e4e7;
+            color: #000000;
+        }
+
+        .btn-mono-secondary {
+            background-color: #18181b;
+            color: #f4f4f5;
+            border: 1px solid #27272a;
+            transition: all 0.2s ease;
+        }
+
+        .btn-mono-secondary:hover {
+            background-color: #27272a;
+            border-color: #3f3f46;
+        }
+
+        /* Custom monochrome clock typography */
+        .font-mono-numbers {
+            font-family: 'Inter', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-white selection:text-black p-3 sm:p-4">
+
+    <!-- Top Header -->
+    <header class="w-full max-w-md mx-auto pt-2 pb-4 px-1 flex justify-between items-center border-b border-zinc-800">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-black text-sm">
+                WT
+            </div>
+            <div>
+                <h1 class="font-extrabold text-base tracking-wider uppercase text-white leading-none">WorkTime</h1>
+                <p class="text-[10px] text-zinc-400 font-mono tracking-widest uppercase mt-0.5">Monochrome Shift PWA</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <!-- PWA Install Button -->
+            <button id="installAppBtn" class="hidden px-2.5 py-1 rounded-md bg-white text-black text-xs font-bold flex items-center space-x-1 hover:bg-zinc-200 transition-all">
+                <i class="fa-solid fa-download text-[10px]"></i>
+                <span>Install</span>
+            </button>
+            <div class="px-2 py-0.5 rounded border border-zinc-700 text-[10px] font-mono text-zinc-400">
+                OFFLINE READY
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="w-full max-w-md mx-auto my-auto py-4 space-y-4">
+        
+        <!-- Primary Card: Live Clock & Countdown -->
+        <div id="mainHeroCard" class="mono-card rounded-2xl p-5 text-center relative overflow-hidden">
+            <!-- Current Time Section -->
+            <div class="flex items-center justify-center space-x-2 mb-1">
+                <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+                <span class="text-[11px] font-mono uppercase tracking-widest text-zinc-400">Current Local Time</span>
+            </div>
+            
+            <div id="liveClock" class="text-4xl sm:text-5xl font-black tracking-tight text-white font-mono-numbers my-1">
+                --:--:-- --
+            </div>
+            <div id="liveDate" class="text-xs font-mono uppercase tracking-wider text-zinc-500 mb-5">
+                --------------------
+            </div>
+
+            <!-- Main Countdown Display -->
+            <div class="pt-4 border-t border-zinc-800/80">
+                <p id="countdownLabel" class="text-[10px] font-mono uppercase tracking-widest text-zinc-400 mb-1">
+                    Time Remaining
+                </p>
+                <div id="countdownTimer" class="text-3xl sm:text-4xl font-black text-white tracking-tight font-mono-numbers py-1">
+                    00h 00m 00s
+                </div>
+                
+                <!-- High-contrast Status Badge -->
+                <div class="mt-3">
+                    <span id="statusBadge" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-800 text-white border border-zinc-700">
+                        <i class="fa-solid fa-hourglass-half mr-1.5 text-[10px]"></i> In Progress
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar Card -->
+        <div class="mono-card rounded-2xl p-4 space-y-3">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-mono uppercase tracking-wider text-zinc-400 flex items-center">
+                    <i class="fa-solid fa-chart-line text-white mr-2"></i> Shift Progress
+                </span>
+                <span id="progressPercentage" class="font-black text-white text-base font-mono-numbers">
+                    0.0%
+                </span>
+            </div>
+
+            <!-- Stark Black and White Visual Bar -->
+            <div class="w-full h-3.5 bg-zinc-900 rounded-full overflow-hidden p-0.5 border border-zinc-800">
+                <div id="progressBar" class="progress-bar-fill h-full bg-white rounded-full w-0"></div>
+            </div>
+
+            <!-- Additional Metrics Grid -->
+            <div class="grid grid-cols-2 gap-2 pt-1 text-center font-mono">
+                <div class="bg-zinc-900/80 p-2 rounded-xl border border-zinc-800/80">
+                    <span class="text-[10px] text-zinc-500 uppercase block">Elapsed</span>
+                    <span id="timeElapsed" class="font-bold text-white text-xs mt-0.5 block">0h 0m</span>
+                </div>
+                <div class="bg-zinc-900/80 p-2 rounded-xl border border-zinc-800/80">
+                    <span class="text-[10px] text-zinc-500 uppercase block">Total Duration</span>
+                    <span id="totalDuration" class="font-bold text-white text-xs mt-0.5 block">8h 0m</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shift Settings & Quick Presets -->
+        <div class="mono-card rounded-2xl p-4 space-y-4">
+            <div id="toggleInputsBtn" class="flex justify-between items-center cursor-pointer select-none">
+                <span class="text-xs font-mono uppercase tracking-wider text-white font-bold flex items-center">
+                    <i class="fa-solid fa-sliders text-zinc-400 mr-2"></i> Shift Configuration
+                </span>
+                <i id="accordionIcon" class="fa-solid fa-chevron-down text-zinc-400 text-xs transition-transform duration-200"></i>
+            </div>
+
+            <div id="inputsPanel" class="space-y-4 pt-1">
+                <!-- Time Pickers Row -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1">
+                            Shift Start
+                        </label>
+                        <input type="time" id="startTimeInput" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-white transition-colors">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1">
+                            Work Done (Out)
+                        </label>
+                        <input type="time" id="endTimeInput" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs font-bold text-white focus:outline-none focus:border-white transition-colors">
+                    </div>
+                </div>
+
+                <!-- Quick Preset Buttons -->
+                <div>
+                    <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
+                        Quick End Time Presets
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="preset636Btn" class="btn-mono-primary py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center">
+                            <i class="fa-solid fa-star text-[10px] mr-1.5"></i> 6:36 PM Out
+                        </button>
+                        <button id="presetPlus8hBtn" class="btn-mono-secondary py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center">
+                            <i class="fa-solid fa-plus text-[10px] mr-1.5"></i> Set +8 Hours
+                        </button>
+                        <button id="preset500Btn" class="btn-mono-secondary py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center">
+                            5:00 PM Out
+                        </button>
+                        <button id="preset600Btn" class="btn-mono-secondary py-2 px-2 rounded-xl text-xs font-bold flex items-center justify-center">
+                            6:00 PM Out
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-md mx-auto py-2 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest border-t border-zinc-900">
+        WorkTime PWA &bull; High Contrast Shift Tracker
+    </footer>
+
+    <!-- High-Contrast Toast Notification -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-white text-black px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none flex items-center space-x-2 z-50 border border-zinc-300">
+        <i id="toastIcon" class="fa-solid fa-circle-info text-black"></i>
+        <span id="toastMsg">Notification message</span>
+    </div>
+
+    <script>
+        // Storage Keys
+        const STORAGE_KEY_START = 'worktime_mono_start';
+        const STORAGE_KEY_END = 'worktime_mono_end';
+
+        // DOM Elements
+        const liveClockEl = document.getElementById('liveClock');
+        const liveDateEl = document.getElementById('liveDate');
+        const countdownTimerEl = document.getElementById('countdownTimer');
+        const countdownLabelEl = document.getElementById('countdownLabel');
+        const statusBadgeEl = document.getElementById('statusBadge');
+        const progressPercentageEl = document.getElementById('progressPercentage');
+        const progressBarEl = document.getElementById('progressBar');
+        const timeElapsedEl = document.getElementById('timeElapsed');
+        const totalDurationEl = document.getElementById('totalDuration');
+        const startTimeInput = document.getElementById('startTimeInput');
+        const endTimeInput = document.getElementById('endTimeInput');
+        const toggleInputsBtn = document.getElementById('toggleInputsBtn');
+        const inputsPanel = document.getElementById('inputsPanel');
+        const accordionIcon = document.getElementById('accordionIcon');
+        const mainHeroCard = document.getElementById('mainHeroCard');
+        const installAppBtn = document.getElementById('installAppBtn');
+
+        // Presets
+        const preset636Btn = document.getElementById('preset636Btn');
+        const presetPlus8hBtn = document.getElementById('presetPlus8hBtn');
+        const preset500Btn = document.getElementById('preset500Btn');
+        const preset600Btn = document.getElementById('preset600Btn');
+
+        let deferredPrompt = null;
+        let alarmTriggered = false;
+
+        const DEFAULT_END = '18:36';
+        const DEFAULT_START = '10:36';
+
+        // Display stark monochrome toast
+        function showToast(message, iconClass = 'fa-solid fa-circle-check') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            const toastIcon = document.getElementById('toastIcon');
+            
+            toastMsg.textContent = message;
+            toastIcon.className = iconClass;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 3000);
+        }
+
+        // Accordion functionality
+        let isAccordionOpen = true;
+        toggleInputsBtn.addEventListener('click', () => {
+            isAccordionOpen = !isAccordionOpen;
+            if (isAccordionOpen) {
+                inputsPanel.classList.remove('hidden');
+                accordionIcon.classList.remove('-rotate-90');
+            } else {
+                inputsPanel.classList.add('hidden');
+                accordionIcon.classList.add('-rotate-90');
+            }
+        });
+
+        // Load & Save Inputs
+        function loadSavedTimes() {
+            const savedStart = localStorage.getItem(STORAGE_KEY_START) || DEFAULT_START;
+            const savedEnd = localStorage.getItem(STORAGE_KEY_END) || DEFAULT_END;
+
+            startTimeInput.value = savedStart;
+            endTimeInput.value = savedEnd;
+        }
+
+        function saveTimes() {
+            localStorage.setItem(STORAGE_KEY_START, startTimeInput.value);
+            localStorage.setItem(STORAGE_KEY_END, endTimeInput.value);
+            alarmTriggered = false;
+            updateTracker();
+        }
+
+        startTimeInput.addEventListener('change', saveTimes);
+        endTimeInput.addEventListener('change', saveTimes);
+
+        // Preset Action Handlers
+        preset636Btn.addEventListener('click', () => {
+            endTimeInput.value = '18:36';
+            startTimeInput.value = '10:36';
+            saveTimes();
+            showToast('Set to 6:36 PM Out!');
+        });
+
+        preset500Btn.addEventListener('click', () => {
+            endTimeInput.value = '17:00';
+            saveTimes();
+            showToast('End time set to 5:00 PM');
+        });
+
+        preset600Btn.addEventListener('click', () => {
+            endTimeInput.value = '18:00';
+            saveTimes();
+            showToast('End time set to 6:00 PM');
+        });
+
+        presetPlus8hBtn.addEventListener('click', () => {
+            const startVal = startTimeInput.value || '09:00';
+            const [h, m] = startVal.split(':').map(Number);
+            const endH = (h + 8) % 24;
+            const formattedH = endH.toString().padStart(2, '0');
+            const formattedM = m.toString().padStart(2, '0');
+            endTimeInput.value = `${formattedH}:${formattedM}`;
+            saveTimes();
+            showToast(`Calculated 8-hour shift (${formattedH}:${formattedM})`);
+        });
+
+        // Time Formatting Utilities
+        function formatTime12Hour(date) {
+            let hours = date.getHours();
+            let minutes = date.getMinutes();
+            let seconds = date.getSeconds();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12;
+            minutes = minutes < 10 ? '0' + minutes : minutes;
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            return {
+                timeString: `${hours}:${minutes}:${seconds}`,
+                ampm: ampm
+            };
+        }
+
+        function timeStringToDate(timeStr) {
+            const now = new Date();
+            if (!timeStr) return now;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0, 0);
+        }
+
+        function formatDuration(milliseconds) {
+            if (milliseconds < 0) milliseconds = 0;
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            const pad = (n) => n.toString().padStart(2, '0');
+            return {
+                formatted: `${hours}h ${pad(minutes)}m ${pad(seconds)}s`,
+                shortFormatted: `${hours}h ${minutes}m`
+            };
+        }
+
+        // Minimalist B&W Audio Beep Notification
+        function playCompletionBeep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                
+                // Sound pulse sequence
+                [0, 0.2, 0.4].forEach((delay) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, now + delay); // A5 note
+                    gain.gain.setValueAtTime(0.15, now + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.15);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + delay);
+                    osc.stop(now + delay + 0.15);
+                });
+            } catch (e) {
+                // Browser audio restrictions
+            }
+        }
+
+        // Request Browser Notification
+        function requestNotificationPermission() {
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission();
+            }
+        }
+
+        function sendBrowserNotification() {
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("Work Time Completed!", {
+                    body: "It's time to head out! Your shift is officially done.",
+                    icon: "https://placehold.co/192x192/000000/ffffff?text=WT"
+                });
+            }
+        }
+
+        // Main Calculation Engine
+        function updateTracker() {
+            const now = new Date();
+
+            // 1. Digital Clock Update
+            const { timeString, ampm } = formatTime12Hour(now);
+            liveClockEl.innerHTML = `${timeString} <span class="text-xl sm:text-2xl font-bold text-zinc-400">${ampm}</span>`;
+            
+            const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+            liveDateEl.textContent = now.toLocaleDateString('en-US', options);
+
+            // 2. Shift Calculation
+            let startDate = timeStringToDate(startTimeInput.value);
+            let endDate = timeStringToDate(endTimeInput.value);
+
+            // Shift spanning past midnight
+            if (endDate <= startDate) {
+                endDate.setDate(endDate.getDate() + 1);
+            }
+
+            const totalShiftMs = endDate.getTime() - startDate.getTime();
+            const elapsedMs = now.getTime() - startDate.getTime();
+            const remainingMs = endDate.getTime() - now.getTime();
+
+            totalDurationEl.textContent = formatDuration(totalShiftMs).shortFormatted;
+
+            // 3. UI State Updating
+            if (now < startDate) {
+                // Not started yet
+                progressPercentageEl.textContent = '0.0%';
+                progressBarEl.style.width = '0%';
+                timeElapsedEl.textContent = '0h 0m';
+                
+                const timeToStart = formatDuration(startDate.getTime() - now.getTime());
+                countdownLabelEl.textContent = 'Time Until Shift Starts';
+                countdownTimerEl.textContent = timeToStart.formatted;
+                
+                statusBadgeEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-zinc-300 border border-zinc-800';
+                statusBadgeEl.innerHTML = '<i class="fa-regular fa-clock mr-1.5 text-[10px]"></i> Shift Upcoming';
+                mainHeroCard.classList.remove('pulse-celebrate');
+
+            } else if (now >= endDate) {
+                // Work Done!
+                progressPercentageEl.textContent = '100.0%';
+                progressBarEl.style.width = '100%';
+                timeElapsedEl.textContent = formatDuration(totalShiftMs).shortFormatted;
+                
+                countdownLabelEl.textContent = 'Shift Completed';
+                countdownTimerEl.textContent = '00h 00m 00s';
+                
+                statusBadgeEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-white text-black';
+                statusBadgeEl.innerHTML = '<i class="fa-solid fa-check mr-1.5 text-[10px]"></i> Work Done - Time To Go!';
+                
+                mainHeroCard.classList.add('pulse-celebrate');
+
+                if (!alarmTriggered) {
+                    playCompletionBeep();
+                    sendBrowserNotification();
+                    showToast('Work is done! Time to go!', 'fa-solid fa-bell');
+                    alarmTriggered = true;
+                }
+
+            } else {
+                // Shift in Progress
+                const pct = Math.min(100, Math.max(0, (elapsedMs / totalShiftMs) * 100));
+                progressPercentageEl.textContent = `${pct.toFixed(1)}%`;
+                progressBarEl.style.width = `${pct}%`;
+
+                timeElapsedEl.textContent = formatDuration(elapsedMs).shortFormatted;
+
+                const remaining = formatDuration(remainingMs);
+                countdownLabelEl.textContent = 'Time Remaining Until Off';
+                countdownTimerEl.textContent = remaining.formatted;
+
+                statusBadgeEl.className = 'inline-flex items-center px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-800 text-zinc-200 border border-zinc-700';
+                statusBadgeEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1.5 text-[10px]"></i> Shift Progress: ${Math.floor(pct)}%`;
+                
+                mainHeroCard.classList.remove('pulse-celebrate');
+            }
+        }
+
+        // PWA Setup with Inline Data URIs for offline support
+        function setupPWA() {
+            // Manifest Data URI
+            const manifestData = {
+                name: "WorkTime Monochrome Tracker",
+                short_name: "WorkTime",
+                start_url: "./",
+                display: "standalone",
+                background_color: "#000000",
+                theme_color: "#000000",
+                icons: [
+                    {
+                        src: "https://placehold.co/192x192/000000/ffffff?text=WT",
+                        sizes: "192x192",
+                        type: "image/png"
+                    },
+                    {
+                        src: "https://placehold.co/512x512/000000/ffffff?text=WorkTime",
+                        sizes: "512x512",
+                        type: "image/png"
+                    }
+                ]
+            };
+            const manifestString = JSON.stringify(manifestData);
+            const manifestBlob = new Blob([manifestString], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            document.getElementById('manifest-placeholder').setAttribute('href', manifestUrl);
+
+            // Inline Service Worker
+            if ('serviceWorker' in navigator) {
+                const swCode = `
+                    const CACHE_NAME = 'worktime-mono-v1';
+                    self.addEventListener('install', (e) => { self.skipWaiting(); });
+                    self.addEventListener('activate', (e) => { self.clients.claim(); });
+                    self.addEventListener('fetch', (e) => {
+                        e.respondWith(
+                            fetch(e.request).catch(() => caches.match(e.request))
+                        );
+                    });
+                `;
+                const swBlob = new Blob([swCode], { type: 'text/javascript' });
+                const swUrl = URL.createObjectURL(swBlob);
+
+                navigator.serviceWorker.register(swUrl)
+                    .then(() => console.log('WorkTime PWA ServiceWorker Registered'))
+                    .catch((err) => console.log('SW registration error:', err));
+            }
+
+            // Install Button logic
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installAppBtn.classList.remove('hidden');
+            });
+
+            installAppBtn.addEventListener('click', async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        showToast('WorkTime installed successfully!');
+                    }
+                    deferredPrompt = null;
+                    installAppBtn.classList.add('hidden');
+                }
+            });
+        }
+
+        // App Initialization
+        window.onload = function() {
+            loadSavedTimes();
+            setupPWA();
+            requestNotificationPermission();
+
+            // Run clock and update interval
+            updateTracker();
+            setInterval(updateTracker, 1000);
+        };
+    </script>
+</body>
+</html>
