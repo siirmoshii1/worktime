@@ -124,6 +124,18 @@
             display: block;
             width: 0;
         }
+
+        /* Smooth Accordion Expansion */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1);
+        }
+
+        .accordion-content.expanded {
+            max-height: 500px;
+            transition: max-height 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between antialiased selection:bg-white selection:text-black p-3 sm:p-6 lg:p-8">
@@ -132,7 +144,7 @@
     <audio id="bgAudio" loop preload="auto" src="music.mp3"></audio>
 
     <!-- Top Navigation Header -->
-    <header class="w-full max-w-6xl mx-auto pb-4 mb-4 border-b border-zinc-800 flex flex-wrap justify-between items-center gap-3">
+    <header class="w-full max-w-5xl mx-auto pb-4 mb-4 border-b border-zinc-800 flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-black text-sm tracking-tight border border-white">
                 WT
@@ -158,58 +170,133 @@
         </div>
     </header>
 
-    <!-- Main Content Area - Grid Layout (Responsive Desktop View) -->
-    <main class="w-full max-w-6xl mx-auto my-auto grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+    <!-- Main Content Area - Centered Layout for Maximum Visual Focus -->
+    <main class="w-full max-w-5xl mx-auto my-auto space-y-6">
 
-        <!-- LEFT COLUMN: Mascot & Control Presets (4 cols on lg screens) -->
-        <div class="lg:col-span-4 space-y-5">
+        <!-- PRIMARY HERO DASHBOARD CARD: Time Remaining & Progress Front & Center -->
+        <div id="mainHeroCard" class="mono-card rounded-2xl p-6 sm:p-10 text-center relative overflow-hidden flex flex-col justify-between items-center">
             
-            <!-- MASCOT AVATAR MOOD CARD -->
-            <div class="mono-card rounded-2xl p-5 text-center relative overflow-hidden flex flex-col items-center justify-center">
-                
+            <!-- Live Current Clock Header -->
+            <div class="w-full pb-4 border-b border-zinc-900 flex flex-wrap justify-between items-center gap-2">
+                <div class="flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+                    <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-zinc-400">LIVE CURRENT TIME</span>
+                </div>
+                <div id="liveClock" class="text-sm sm:text-base font-bold text-white font-mono-numbers">
+                    00:00:00.<span class="text-zinc-500 text-xs">000</span> AM
+                </div>
+                <div id="liveDate" class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-zinc-500">
+                    --------------------
+                </div>
+            </div>
+
+            <!-- Mascot & Speech Bubble Section -->
+            <div class="my-6 flex flex-col items-center">
                 <!-- Dynamic Speech Bubble -->
-                <div class="relative inline-block mb-4 max-w-full">
-                    <div id="speechBubble" class="speech-bubble bg-white text-black px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-extrabold tracking-tight shadow-xl border border-zinc-300 transition-all">
+                <div class="relative inline-block mb-3 max-w-full">
+                    <div id="speechBubble" class="speech-bubble bg-white text-black px-4 py-2 rounded-xl text-xs sm:text-sm font-mono font-extrabold tracking-tight shadow-xl border border-zinc-300 transition-all">
                         "Tracking every millisecond..."
                     </div>
                 </div>
 
-                <!-- Avatar Image Container with img.jpg -->
-                <div class="relative w-32 h-32 sm:w-36 sm:h-36 mx-auto my-2 flex items-center justify-center">
+                <!-- Mascot Avatar Container with img.jpg -->
+                <div class="relative w-28 h-28 sm:w-32 sm:h-32 my-1 flex items-center justify-center">
                     <div id="avatarRing" class="absolute inset-0 rounded-full border border-zinc-700"></div>
-                    <div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full border-2 border-white p-0.5 bg-zinc-950 overflow-hidden relative z-10 shadow-2xl">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-2 border-white p-0.5 bg-zinc-950 overflow-hidden relative z-10 shadow-2xl">
                         <img id="mascotAvatar" src="img.jpg" onerror="this.onerror=null; this.src='https://placehold.co/300x300/18181b/ffffff?text=img.jpg'" class="avatar-img avatar-working w-full h-full object-cover rounded-full" alt="Work Mascot Avatar">
                     </div>
                 </div>
 
-                <!-- Mascot Mood Status Tag -->
-                <div class="mt-2 inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono uppercase tracking-widest text-zinc-300">
+                <!-- Mood Status Tag -->
+                <div class="mt-2 inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-zinc-300">
                     <span id="moodDot" class="w-2 h-2 rounded-full bg-zinc-400"></span>
                     <span id="mascotMoodStatus">STATUS: SHIFT IN PROGRESS</span>
                 </div>
             </div>
 
-            <!-- CONTROLS & PRESETS CARD -->
-            <div class="mono-card rounded-2xl p-5 space-y-4">
-                <div class="flex justify-between items-center pb-2 border-b border-zinc-800">
-                    <span class="text-xs font-mono uppercase tracking-wider text-white font-extrabold flex items-center">
-                        <i class="fa-solid fa-sliders text-zinc-400 mr-2"></i> Shift Controls & Presets
-                    </span>
+            <!-- PROMINENT CENTERPIECE: TIME REMAINING & PERCENTAGE -->
+            <div class="w-full my-4 py-6 px-4 bg-zinc-950/80 rounded-2xl border border-zinc-800/80 flex flex-col md:flex-row items-center justify-around gap-8">
+                
+                <!-- Circular Visualizer + High Visibility Percentage -->
+                <div class="relative w-44 h-44 sm:w-52 sm:h-52 flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                        <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
+                        <circle id="circleProgress" class="circle-progress" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
+                    </svg>
+                    
+                    <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
+                        <span id="progressPercentage" class="text-3xl sm:text-4xl font-black text-white font-mono-numbers tracking-tight">0.000%</span>
+                        <span class="text-[9px] font-mono uppercase tracking-widest text-zinc-400 mt-1 font-bold">COMPLETED</span>
+                    </div>
                 </div>
 
-                <div class="space-y-4 pt-1">
-                    <div class="grid grid-cols-2 gap-3">
+                <!-- Large Countdown Display -->
+                <div class="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
+                    <div class="inline-flex items-center space-x-2">
+                        <i class="fa-solid fa-hourglass-half text-xs text-zinc-400"></i>
+                        <span id="countdownLabel" class="text-xs sm:text-sm font-mono font-bold uppercase tracking-widest text-zinc-400">
+                            TIME REMAINING
+                        </span>
+                    </div>
+
+                    <!-- Millisecond Precision Countdown -->
+                    <div id="countdownTimer" class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight font-mono-numbers leading-tight my-1">
+                        00h 00m 00s <span class="text-zinc-500 text-2xl sm:text-4xl">000ms</span>
+                    </div>
+
+                    <!-- Linear Progress Bar -->
+                    <div class="w-full max-w-md bg-zinc-900 h-2.5 rounded-full overflow-hidden border border-zinc-800 mt-2">
+                        <div id="linearProgressBar" class="bg-white h-full transition-all duration-75" style="width: 0%;"></div>
+                    </div>
+
+                    <div class="pt-2">
+                        <span id="statusBadge" class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-zinc-200 border border-zinc-700">
+                            <i class="fa-solid fa-spinner fa-spin mr-2 text-xs"></i> Shift Active
+                        </span>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer summary details inside Hero -->
+            <div class="w-full pt-4 border-t border-zinc-900 flex flex-wrap justify-between items-center text-[11px] font-mono text-zinc-500 gap-2">
+                <span>TARGET OUT TIME: <strong id="targetDisplayTime" class="text-white font-extrabold">6:36 PM</strong></span>
+                <span>PRECISION TICK RATE: <strong>1MS</strong></span>
+            </div>
+
+        </div>
+
+        <!-- COLLAPSED SETTINGS & SHIFT CONTROLS ACCORDION (Dropdown Closed by Default) -->
+        <div class="mono-card rounded-2xl overflow-hidden transition-all">
+            
+            <!-- Accordion Toggle Header -->
+            <button id="accordionToggleBtn" class="w-full px-6 py-4 flex justify-between items-center text-left hover:bg-zinc-900/50 transition-colors focus:outline-none">
+                <span class="text-xs font-mono uppercase tracking-wider text-white font-extrabold flex items-center">
+                    <i class="fa-solid fa-sliders text-zinc-400 mr-2.5"></i> Shift Controls & Presets
+                    <span class="ml-3 text-[10px] font-normal text-zinc-500 border border-zinc-800 px-2 py-0.5 rounded-md">Click to configure</span>
+                </span>
+                <div class="flex items-center space-x-2">
+                    <span id="accordionStatusText" class="text-[10px] font-mono text-zinc-500 uppercase">COLLAPSED</span>
+                    <i id="accordionIcon" class="fa-solid fa-chevron-down text-xs text-zinc-400 transition-transform duration-300"></i>
+                </div>
+            </button>
+
+            <!-- Collapsible Content Panel (Hidden by default) -->
+            <div id="accordionContent" class="accordion-content border-t border-transparent">
+                <div class="p-6 space-y-5 border-t border-zinc-900 bg-zinc-950/40">
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1.5">
-                                Shift Start
+                                Shift Start Time
                             </label>
-                            <input type="time" id="startTimeInput" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-white transition-colors">
+                            <input type="time" id="startTimeInput" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-white transition-colors">
                         </div>
                         <div>
                             <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-1.5">
-                                Work Done (Out)
+                                Work Done (Out Time)
                             </label>
-                            <input type="time" id="endTimeInput" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white focus:outline-none focus:border-white transition-colors">
+                            <input type="time" id="endTimeInput" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-white focus:outline-none focus:border-white transition-colors">
                         </div>
                     </div>
 
@@ -217,94 +304,33 @@
                         <label class="block text-[10px] font-mono uppercase tracking-wider text-zinc-400 mb-2">
                             Quick Out Time Presets
                         </label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button id="preset636Btn" class="bg-white text-black font-extrabold hover:bg-zinc-200 py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md">
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                            <button id="preset636Btn" class="bg-white text-black font-extrabold hover:bg-zinc-200 py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 transition-all shadow-md cursor-pointer">
                                 <i class="fa-solid fa-star text-[10px]"></i>
                                 <span>6:36 PM Out</span>
                             </button>
-                            <button id="presetPlus8hBtn" class="bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1 transition-all">
+                            <button id="presetPlus8hBtn" class="bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-1 transition-all cursor-pointer">
                                 <i class="fa-solid fa-plus text-[10px]"></i>
                                 <span>+8 Hours</span>
                             </button>
-                            <button id="preset500Btn" class="bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center transition-all">
+                            <button id="preset500Btn" class="bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center transition-all cursor-pointer">
                                 5:00 PM Out
                             </button>
-                            <button id="preset600Btn" class="bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center transition-all">
+                            <button id="preset600Btn" class="bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center transition-all cursor-pointer">
                                 6:00 PM Out
                             </button>
                         </div>
                     </div>
+
                 </div>
             </div>
 
-        </div>
-
-        <!-- RIGHT COLUMN: High-Precision Live Countdown Hero Card (8 cols on lg screens) -->
-        <div class="lg:col-span-8">
-            <div id="mainHeroCard" class="mono-card rounded-2xl p-6 sm:p-8 text-center relative overflow-hidden min-h-[460px] flex flex-col justify-between">
-                
-                <!-- Live Current Time with Milliseconds -->
-                <div>
-                    <div class="flex items-center justify-center space-x-2 mb-1">
-                        <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
-                        <span class="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-zinc-400">CURRENT TIME (MS)</span>
-                    </div>
-                    
-                    <div id="liveClock" class="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white font-mono-numbers my-1">
-                        00:00:00.<span class="text-zinc-500 text-2xl sm:text-4xl">000</span> AM
-                    </div>
-                    
-                    <div id="liveDate" class="text-xs font-mono uppercase tracking-widest text-zinc-500">
-                        --------------------
-                    </div>
-                </div>
-
-                <!-- SVG Circular Progress Visualizer & Percent Counter -->
-                <div class="my-6 flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-10">
-                    
-                    <div class="relative w-48 h-48 sm:w-56 sm:h-56 flex-shrink-0 flex items-center justify-center">
-                        <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                            <circle class="circle-bg" cx="50" cy="50" r="42"></circle>
-                            <circle id="circleProgress" class="circle-progress" cx="50" cy="50" r="42" stroke-dasharray="263.89" stroke-dashoffset="263.89"></circle>
-                        </svg>
-                        
-                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-                            <span id="progressPercentage" class="text-3xl sm:text-4xl font-black text-white font-mono-numbers">0.000%</span>
-                            <span class="text-[9px] font-mono uppercase tracking-widest text-zinc-500 mt-1">WORK COMPLETED</span>
-                        </div>
-                    </div>
-
-                    <!-- Millisecond Countdown Panel -->
-                    <div class="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
-                        <p id="countdownLabel" class="text-xs font-mono uppercase tracking-widest text-zinc-400">
-                            TIME REMAINING
-                        </p>
-                        <div id="countdownTimer" class="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight font-mono-numbers leading-tight">
-                            00h 00m 00s <span class="text-zinc-500 text-xl sm:text-3xl">000ms</span>
-                        </div>
-
-                        <div class="pt-2">
-                            <span id="statusBadge" class="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-white border border-zinc-800">
-                                <i class="fa-solid fa-spinner fa-spin mr-2 text-xs"></i> Shift Active
-                            </span>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Footer info inside hero -->
-                <div class="pt-4 border-t border-zinc-900 flex flex-wrap justify-between items-center text-[10px] font-mono text-zinc-500">
-                    <span>TARGET END: <strong id="targetDisplayTime" class="text-zinc-300">6:36 PM</strong></span>
-                    <span>PRECISION: 1MS TICK RATE</span>
-                </div>
-
-            </div>
         </div>
 
     </main>
 
     <!-- Page Footer -->
-    <footer class="w-full max-w-6xl mx-auto pt-6 pb-2 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest border-t border-zinc-900 mt-6">
+    <footer class="w-full max-w-5xl mx-auto pt-6 pb-2 text-center text-[10px] font-mono text-zinc-600 uppercase tracking-widest border-t border-zinc-900 mt-6">
         WORKTIME TRACKER PWA &bull; MONOCHROME SHIFT SYSTEM
     </footer>
 
@@ -316,8 +342,8 @@
 
     <script>
         // Local Storage Keys
-        const STORAGE_KEY_START = 'worktime_ms_start_v1';
-        const STORAGE_KEY_END = 'worktime_ms_end_v1';
+        const STORAGE_KEY_START = 'worktime_ms_start_v2';
+        const STORAGE_KEY_END = 'worktime_ms_end_v2';
 
         // DOM Elements
         const bgAudio = document.getElementById('bgAudio');
@@ -338,7 +364,13 @@
         const statusBadgeEl = document.getElementById('statusBadge');
         const progressPercentageEl = document.getElementById('progressPercentage');
         const circleProgressEl = document.getElementById('circleProgress');
+        const linearProgressBarEl = document.getElementById('linearProgressBar');
         const targetDisplayTimeEl = document.getElementById('targetDisplayTime');
+
+        const accordionToggleBtn = document.getElementById('accordionToggleBtn');
+        const accordionContent = document.getElementById('accordionContent');
+        const accordionIcon = document.getElementById('accordionIcon');
+        const accordionStatusText = document.getElementById('accordionStatusText');
 
         const startTimeInput = document.getElementById('startTimeInput');
         const endTimeInput = document.getElementById('endTimeInput');
@@ -356,7 +388,21 @@
         const DEFAULT_END = '18:36';
         const DEFAULT_START = '08:36';
 
-        // --- 1. AUTOPLAY AUDIO ENGINE ---
+        // --- 1. ACCORDION CONTROLLER ---
+        accordionToggleBtn.addEventListener('click', () => {
+            const isExpanded = accordionContent.classList.contains('expanded');
+            if (isExpanded) {
+                accordionContent.classList.remove('expanded');
+                accordionIcon.style.transform = 'rotate(0deg)';
+                accordionStatusText.textContent = 'COLLAPSED';
+            } else {
+                accordionContent.classList.add('expanded');
+                accordionIcon.style.transform = 'rotate(180deg)';
+                accordionStatusText.textContent = 'EXPANDED';
+            }
+        });
+
+        // --- 2. AUTOPLAY AUDIO ENGINE ---
         function attemptAutoplay() {
             bgAudio.volume = 0.8;
             const playPromise = bgAudio.play();
@@ -366,7 +412,7 @@
                     isAudioPlaying = true;
                     updateAudioUI(true);
                 }).catch(err => {
-                    console.log("Browser restricted immediate silent autoplay. Unlocking on first user gesture.");
+                    console.log("Browser restricted immediate autoplay. Will unlock on first user gesture.");
                     isAudioPlaying = false;
                     updateAudioUI(false);
                 });
@@ -404,7 +450,7 @@
 
         audioToggleBtn.addEventListener('click', toggleAudio);
 
-        // Global fallback: Unlocks audio context instantly on ANY mouse click, keypress, or touch gesture
+        // Global fallback: Unlocks audio context instantly on ANY screen click/tap/keypress
         const unlockAudioOnGesture = () => {
             if (!isAudioPlaying && bgAudio.paused) {
                 bgAudio.play().then(() => {
@@ -418,7 +464,7 @@
             document.addEventListener(evt, unlockAudioOnGesture, { once: false });
         });
 
-        // --- 2. TOAST SYSTEM ---
+        // --- 3. TOAST SYSTEM ---
         function showToast(message, iconClass = 'fa-solid fa-circle-check') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMsg');
@@ -435,7 +481,7 @@
             }, 2500);
         }
 
-        // --- 3. STORAGE & TIME INPUTS ---
+        // --- 4. STORAGE & TIME INPUTS ---
         function loadSavedTimes() {
             const savedStart = localStorage.getItem(STORAGE_KEY_START) || DEFAULT_START;
             const savedEnd = localStorage.getItem(STORAGE_KEY_END) || DEFAULT_END;
@@ -554,12 +600,12 @@
             } else if (isFinished) {
                 mascotAvatar.classList.add('avatar-done');
                 speechBubble.textContent = `"FREEDOM! IT IS 6:36 PM! GO HOME!"`;
-                speechBubble.className = "speech-bubble bg-white text-black px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-black tracking-tight shadow-xl border-2 border-white scale-105";
+                speechBubble.className = "speech-bubble bg-white text-black px-4 py-2 rounded-xl text-xs sm:text-sm font-mono font-black tracking-tight shadow-xl border-2 border-white scale-105";
                 mascotMoodStatus.textContent = "STATUS: WORK DONE! FREE!";
                 moodDot.className = "w-2 h-2 rounded-full bg-white animate-ping";
                 avatarRing.style.borderColor = "#ffffff";
             } else {
-                speechBubble.className = "speech-bubble bg-white text-black px-4 py-2.5 rounded-xl text-xs sm:text-sm font-mono font-extrabold tracking-tight shadow-xl border border-zinc-300";
+                speechBubble.className = "speech-bubble bg-white text-black px-4 py-2 rounded-xl text-xs sm:text-sm font-mono font-extrabold tracking-tight shadow-xl border border-zinc-300";
                 
                 if (pct < 25) {
                     mascotAvatar.classList.add('avatar-working');
@@ -589,13 +635,13 @@
             }
         }
 
-        // --- 4. HIGH-PRECISION TICK ENGINE (ANIMATION FRAME / 1MS) ---
+        // --- 5. HIGH-PRECISION TICK ENGINE (ANIMATION FRAME / 1MS) ---
         function tickEngine() {
             const now = new Date();
 
             // Clock Display
             const { mainStr, msStr, ampm } = formatClockWithMs(now);
-            liveClockEl.innerHTML = `${mainStr}.<span class="text-zinc-500 text-2xl sm:text-4xl">${msStr}</span> <span class="text-xl sm:text-3xl text-zinc-400 font-bold">${ampm}</span>`;
+            liveClockEl.innerHTML = `${mainStr}.<span class="text-zinc-500 text-xs">${msStr}</span> <span class="text-xs text-zinc-400 font-bold">${ampm}</span>`;
             
             const options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
             liveDateEl.textContent = now.toLocaleDateString('en-US', options);
@@ -620,10 +666,11 @@
             if (now < startDate) {
                 progressPercentageEl.textContent = '0.000%';
                 circleProgressEl.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
+                linearProgressBarEl.style.width = '0%';
                 
                 countdownLabelEl.textContent = 'TIME UNTIL START';
                 const dur = formatMsDuration(startDate.getTime() - now.getTime());
-                countdownTimerEl.innerHTML = `${dur.hms} <span class="text-zinc-500 text-xl sm:text-3xl">${dur.ms}ms</span>`;
+                countdownTimerEl.innerHTML = `${dur.hms} <span class="text-zinc-500 text-2xl sm:text-4xl">${dur.ms}ms</span>`;
                 
                 statusBadgeEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-zinc-400 border border-zinc-800';
                 statusBadgeEl.innerHTML = '<i class="fa-regular fa-clock mr-2 text-xs"></i> Shift Upcoming';
@@ -633,9 +680,10 @@
             } else if (now >= endDate) {
                 progressPercentageEl.textContent = '100.000%';
                 circleProgressEl.style.strokeDashoffset = 0;
+                linearProgressBarEl.style.width = '100%';
                 
                 countdownLabelEl.textContent = 'SHIFT COMPLETED';
-                countdownTimerEl.innerHTML = `00h 00m 00s <span class="text-zinc-500 text-xl sm:text-3xl">000ms</span>`;
+                countdownTimerEl.innerHTML = `00h 00m 00s <span class="text-zinc-500 text-2xl sm:text-4xl">000ms</span>`;
                 
                 statusBadgeEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-white text-black';
                 statusBadgeEl.innerHTML = '<i class="fa-solid fa-check mr-2 text-xs"></i> WORK DONE! TIME TO GO!';
@@ -664,10 +712,11 @@
                 
                 const offset = CIRCLE_CIRCUMFERENCE - (pct / 100) * CIRCLE_CIRCUMFERENCE;
                 circleProgressEl.style.strokeDashoffset = offset;
+                linearProgressBarEl.style.width = `${pct}%`;
 
                 countdownLabelEl.textContent = 'TIME REMAINING';
                 const dur = formatMsDuration(remainingMs);
-                countdownTimerEl.innerHTML = `${dur.hms} <span class="text-zinc-500 text-xl sm:text-3xl">${dur.ms}ms</span>`;
+                countdownTimerEl.innerHTML = `${dur.hms} <span class="text-zinc-500 text-2xl sm:text-4xl">${dur.ms}ms</span>`;
 
                 statusBadgeEl.className = 'inline-flex items-center px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider bg-zinc-900 text-zinc-200 border border-zinc-700';
                 statusBadgeEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2 text-xs"></i> Working... (${pct.toFixed(1)}%)`;
@@ -678,7 +727,7 @@
             requestAnimationFrame(tickEngine);
         }
 
-        // --- 5. PWA SERVICE WORKER REGISTRATION ---
+        // --- 6. PWA SERVICE WORKER REGISTRATION ---
         function setupPWA() {
             const manifestData = {
                 name: "WorkTime Tracker",
